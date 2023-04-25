@@ -1,0 +1,16 @@
+{
+  "name": "ytdl-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "test"
+  },
+  "author": "Anthony RAFFY",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "redis": "^4.6.5"
+  }
+}

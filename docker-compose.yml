@@ -1,0 +1,24 @@
+version: "3.0"
+services:
+  react:
+    build:
+      context: ./ytdl-front
+    ports:
+      - "10500:3000"
+    volumes:
+     - ./:/code
+  express:
+    build:
+      context: ./ytdl-backend
+    ports:
+      - "10501:3000"
+    volumes:
+     - ./:/code 
+    environment:
+      - REDIS_URL=redis
+  redis:
+    image: redis:alpine
+  worker:
+    build:
+      context: ./ytdl-worker
+    
