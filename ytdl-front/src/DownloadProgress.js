@@ -1,15 +1,18 @@
 import React, { useRef, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
 import "./DownloadProgress.css";
 
 function DownloadProgress() {
 
+    const location = useLocation();
     const output = useRef("");
     const [finalOutput, setFinalOutput] = useState("");
 
     useEffect(() => {
 
         console.log("Init")
-        const sse = new EventSource('http://192.168.1.10:10501/stream/currtask');
+        const sse = new EventSource(`http://192.168.1.10:10501/stream/${location.state.jobId}`);
 
         function appendOutput(e) {
           output.current = output.current + "\n" + e.data;
@@ -35,7 +38,7 @@ function DownloadProgress() {
           sse.close();
           console.log("Cleanup..");
         }
-    }, []);
+    }, [location.state.jobId]);
 
 
     return (
