@@ -9,7 +9,24 @@ const cors = require('cors');
 var corsOptions = {
   origin: "http://192.168.1.10:10500"
 };
+
+
+app.use(express.json());
 app.use(cors(corsOptions));
+
+const client = redis.createClient({url :  `redis://${process.env.REDIS_URL}`, legacyMode: true});
+
+
+app.post('/job/create', function(req, res) {
+  const url = req.body.url;
+
+  // TO-DO (Need a middleware sanitizer for YouTube URLs)
+  console.log("URL : " + url);
+
+
+  // TO-DO (Generate a job in REDIS : Send URL to worker + jobId to client)
+  res.json({"jobId" : "currtask"})
+});
 
 
 app.get('/stream/:job', sse, async (req, res) => {
@@ -17,11 +34,11 @@ app.get('/stream/:job', sse, async (req, res) => {
     
     res.initSSE();
 
-    let client = redis.createClient({url :  `redis://${process.env.REDIS_URL}`, legacyMode: true});
-    await client.connect();
+    let tempClient = redis.createClient({url :  `redis://${process.env.REDIS_URL}`, legacyMode: true});
+    await tempClient.connect();
 
     const xread = ({ stream, id }) => {
-        client.xRead('BLOCK', 0, 'STREAMS', stream, id, (err, str) => {
+      tempClient.xRead('BLOCK', 0, 'STREAMS', stream, id, (err, str) => {
           if (err) return console.error('Error reading from stream:', err);
       
           str[0][1].forEach(message => {
@@ -38,7 +55,7 @@ app.get('/stream/:job', sse, async (req, res) => {
     res.on('close', () => {
         console.log("Connection closed in main.");
         // TO-DO(Find a way to disconnect redis client without error)
-        // client.disconnect();
+        // tempClient.disconnect();
         res.end();
     });
 });
