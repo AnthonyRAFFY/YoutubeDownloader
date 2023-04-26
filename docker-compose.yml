@@ -6,7 +6,7 @@ services:
     ports:
       - "10500:3000"
     volumes:
-     - ./:/code
+     - ./ytdl-front/src:/app/src
   express:
     build:
       context: ./ytdl-backend
