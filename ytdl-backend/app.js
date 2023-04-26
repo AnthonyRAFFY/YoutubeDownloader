@@ -1,20 +1,24 @@
 const express = require('express')
 const redis = require('redis')
+const sse = require('./sse');
 const app = express()
 const port = 3000
+const cors = require('cors');
 
-const client = redis.createClient({url :  `redis://${process.env.REDIS_URL}`, legacyMode: true});
-client.connect();
 
-app.get('/stream/:job', async (req, res) => {
+var corsOptions = {
+  origin: "http://192.168.1.10:10500"
+};
+app.use(cors(corsOptions));
 
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders();
 
-    res.write('\n');
+app.get('/stream/:job', sse, async (req, res) => {
+
+    
+    res.initSSE();
+
+    let client = redis.createClient({url :  `redis://${process.env.REDIS_URL}`, legacyMode: true});
+    await client.connect();
 
     const xread = ({ stream, id }) => {
         client.xRead('BLOCK', 0, 'STREAMS', stream, id, (err, str) => {
@@ -22,17 +26,19 @@ app.get('/stream/:job', async (req, res) => {
       
           str[0][1].forEach(message => {
             id = message[0];
-            console.log(message[1]);
-            res.write(message[1][1] + "\n");
+            res.sendSSE(message[1][1], message[1][3]);
           });
-      
+
           setTimeout(() => xread({ stream, id }), 0)
         });
       }
       
-      xread({ stream: req.params.job, id: '$' })
+      xread({ stream: req.params.job, id: '0' })
 
     res.on('close', () => {
+        console.log("Connection closed in main.");
+        // TO-DO(Find a way to disconnect redis client without error)
+        // client.disconnect();
         res.end();
     });
 });
@@ -42,5 +48,5 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`Starting Youtube-Downloader back-end ${port}`)
 })
