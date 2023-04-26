@@ -2,36 +2,39 @@ import redis
 import os
 from yt_dlp import YoutubeDL
 
+conn = None;
+
+def forge_data(datatype, text):
+    return {"type": datatype, "log": text}
+
 class DownloadLogger:
     def debug(self, msg):
         # For compatibility with youtube-dl, both debug and info are passed into debug
         # You can distinguish them by the prefix '[debug] '
         if msg.startswith('[debug] '):
-            pass
-        else:
-            self.info(msg)
+            rep = conn.xadd("currtask", forge_data("log", str(msg)));
 
     def info(self, msg):
-        pass
+        rep = rep = conn.xadd("currtask", forge_data("log", str(msg)));
+
 
     def warning(self, msg):
-        pass
+        rep = conn.xadd("currtask", forge_data("log", str(msg)));
 
     def error(self, msg):
-        print(msg)
+        rep = conn.xadd("currtask", forge_data("log", str(msg)));
         
 def status_hook(d):
     if d['status'] == 'finished':
-        print('Done downloading, now post-processing ...')
-
+        conn.xadd("currtask", forge_data("status", "finished_download"));
 
 if __name__ == '__main__':
 
-    r = redis.Redis(host='redis', port=6379, db=0)
+    conn = redis.Redis(host='redis', port=6379, db=0)
 
     while True:
         print("Waiting for new item...")
-        item = r.blpop("jobQueue", timeout=0);
+        item = conn.blpop("jobQueue", timeout=0);
 
         URLS = [item[1].decode("utf-8")];
         ydl_opts = {
@@ -47,3 +50,4 @@ if __name__ == '__main__':
 
         with YoutubeDL(ydl_opts) as ydl:
             ydl.download(URLS)
+            conn.xadd("currtask", forge_data("status", "finished"));
