@@ -8,7 +8,6 @@ COPY package-lock.json /app/package-lock.json
 # Same as npm install, but for automatic envs.
 RUN npm ci
 
-COPY ./src /app/src
 COPY ./public /app/public
 
 CMD [ "npm", "start" ]

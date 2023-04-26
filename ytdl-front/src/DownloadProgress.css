@@ -1,0 +1,13 @@
+#console {
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
+    display: block;
+    width: 900px;
+    height: 430px;
+    padding: 10px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.19);
+    background-color: rgba(255, 255, 255, 0.45);
+    border-radius: 5px;
+}

@@ -1,12 +1,13 @@
 import React, { useState } from "react";
+import { Link } from 'react-router-dom';
 import "./YoutubeDownloader.css";
 
 function YoutubeDownloader() {
+
   const [url, setUrl] = useState("");
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Envoyer les données au back-end
     console.log(url);
   };
 
@@ -19,7 +20,10 @@ function YoutubeDownloader() {
           <input type="text" value={url} onChange={(event) => setUrl(event.target.value)} />
         </label>
         <br />
-        <button type="submit">Télécharger</button>
+        <Link to="/download">
+          <button>Télécharger</button>
+        </Link>
+
       </form>
     </div>
   );
