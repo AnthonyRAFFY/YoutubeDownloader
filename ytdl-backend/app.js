@@ -4,6 +4,7 @@ const sse = require('./sse');
 const app = express()
 const port = 3000
 const cors = require('cors');
+const { v4: uuidv4 } = require('uuid');
 
 
 var corsOptions = {
@@ -15,17 +16,22 @@ app.use(express.json());
 app.use(cors(corsOptions));
 
 const client = redis.createClient({url :  `redis://${process.env.REDIS_URL}`, legacyMode: true});
-
+client.connect();
 
 app.post('/job/create', function(req, res) {
   const url = req.body.url;
 
   // TO-DO (Need a middleware sanitizer for YouTube URLs)
-  console.log("URL : " + url);
+  
+  // Generate UUID
+  jobId = uuidv4();
 
+  client.sAdd('jobs', jobId);
+  client.set(`jobs:${jobId}:url`, url);
 
-  // TO-DO (Generate a job in REDIS : Send URL to worker + jobId to client)
-  res.json({"jobId" : "currtask"})
+  client.rPush("jobsQueue", jobId);
+  // TO-DO (Generate a job in REDIS + Send URL to worker + jobId to client)
+  res.json({"jobId" : jobId})
 });
 
 
