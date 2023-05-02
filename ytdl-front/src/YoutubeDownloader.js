@@ -26,14 +26,10 @@ function YoutubeDownloader() {
   
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-      <form onSubmit={handleSubmit}>
-        <h1>Youtube Downloader</h1>
-        <label>
-          URL:
-          <input type="text" value={url} onChange={(event) => setUrl(event.target.value)} />
-        </label>
-        <br />
+    <div class="flex flex-column">
+      <form class="flex flex-column" onSubmit={handleSubmit}>
+        <h1>Download a YouTube's video audio</h1>
+        <input type="text" placeholder="Enter a YouTube URL" value={url} onChange={(event) => setUrl(event.target.value)} />
         <button>Télécharger</button>
       </form>
     </div>

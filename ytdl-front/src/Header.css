@@ -1,0 +1,33 @@
+#header #title{
+    font-size: large;
+    color: white;
+    letter-spacing: 0.05em;
+}
+
+#header {
+    background-color: black;
+    color: rgb(255, 187, 51);
+    box-sizing: border-box;
+    font-family: "Avenir Next", Lato, Helvetica, sans-serif;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+}
+
+#header-fixed {
+    display: flex;
+    height: 64px;
+    max-width: 60%;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* For the headers to look good, be sure to reset the margin and padding of the body */
+
+body {
+	margin:0;
+	padding:0;
+}

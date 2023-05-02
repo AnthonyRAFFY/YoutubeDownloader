@@ -6,8 +6,22 @@ import "./DownloadProgress.css";
 function DownloadProgress() {
 
     const location = useLocation();
-    const output = useRef("");
+    const output = useRef([]);
     const [finalOutput, setFinalOutput] = useState("");
+
+    function getOutput() {
+      let text = "";
+      for (let line of output.current) {
+        if (text === "") {
+          text += line;
+        }
+        else {
+          text += "\n" + line;
+        }
+      }
+
+      return text;
+    }
 
     useEffect(() => {
 
@@ -15,9 +29,14 @@ function DownloadProgress() {
         const sse = new EventSource(`http://192.168.1.10:10501/stream/${location.state.jobId}`);
 
         function appendOutput(e) {
-          output.current = output.current + "\n" + e.data;
-          setFinalOutput(output.current);
+
+          if (output.current.length === 10) {
+            output.current.shift();
+          }
+          output.current.push(e.data);
+          setFinalOutput(getOutput());
         }
+        
         sse.addEventListener('log', appendOutput, false);
       
         //sse.addEventListener('status', function(e) {
@@ -42,8 +61,12 @@ function DownloadProgress() {
 
 
     return (
-        <textarea id="console" rows="10" readonly="" name="log" value={finalOutput}>
-        </textarea>
+        <div class="flex flex-column">
+          <h1>Your download is in progress...</h1>
+          <textarea id="console" rows="10" readonly="" name="log" value={finalOutput}>
+          </textarea>
+          <h2>Generating link...</h2>
+        </div>
       );
 }
 

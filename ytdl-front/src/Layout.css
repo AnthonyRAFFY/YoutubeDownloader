@@ -1,0 +1,10 @@
+.container {
+    margin: auto;
+    max-width: 1200px;
+  }
+
+.layout-container {
+    box-sizing: border-box;
+    background-color: #333339; 
+    height: 100%
+}
