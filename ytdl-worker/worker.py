@@ -50,6 +50,7 @@ if __name__ == '__main__':
             'logger': DownloadLogger(uuid),
             'progress_hooks': [functools.partial(status_hook, uuid=uuid)],
             'format': 'bestaudio/best',
+            'outtmpl': '../mp3-data/' + str(uuid) + '',
             'postprocessors': [{  # Extract audio using ffmpeg
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',

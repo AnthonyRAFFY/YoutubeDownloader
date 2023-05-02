@@ -11,7 +11,9 @@ var corsOptions = {
   origin: "http://192.168.1.10:10500"
 };
 
-
+// Serve mp3 files
+// TO-DO (Switch to a dedicated static web server or something else with reverse proxy etc. ONLY FOR DEV NOW)
+app.use(express.static('../mp3-data'))
 app.use(express.json());
 app.use(cors(corsOptions));
 
