@@ -1,9 +1,13 @@
 import redis
 import os
 import functools
+import boto3
+from botocore.exceptions import ClientError
 from yt_dlp import YoutubeDL
 
+BUCKET_NAME = "ytdl-bucket";
 conn = None;
+s3 = boto3.resource('s3')
 
 def forge_data(datatype, text):
     return {"type": datatype, "log": text}
@@ -31,7 +35,7 @@ class DownloadLogger:
         
 def status_hook(d, uuid):
     if d['status'] == 'finished':
-        conn.xadd(uuid, forge_data("status", "finished_download"));
+        conn.xadd(uuid, forge_data("status", "FINISHED_DOWNLOAD"));
 
 if __name__ == '__main__':
 
@@ -46,11 +50,15 @@ if __name__ == '__main__':
         url = url.decode("utf-8");
         print("URL : " + str(url));
         URLS = [url];
+
+        mp3_filename = str(uuid) + ".mp3";
+        mp3_path = os.path.join(os.getcwd(), str(uuid));
+        mp3_file = os.path.join(os.getcwd(), mp3_filename);
         ydl_opts = {
             'logger': DownloadLogger(uuid),
             'progress_hooks': [functools.partial(status_hook, uuid=uuid)],
             'format': 'bestaudio/best',
-            'outtmpl': '../mp3-data/' + str(uuid) + '',
+            'outtmpl': mp3_path,
             'postprocessors': [{  # Extract audio using ffmpeg
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
@@ -60,4 +68,17 @@ if __name__ == '__main__':
 
         with YoutubeDL(ydl_opts) as ydl:
             ydl.download(URLS)
-            conn.xadd(uuid, forge_data("status", "finished"));
+
+            data = open(mp3_file, 'rb')
+
+            try: 
+                s3.Bucket(BUCKET_NAME).put_object(Key=mp3_filename, Body=data)
+                s3_client = boto3.client('s3')
+                response = s3_client.generate_presigned_url('get_object', Params={'Bucket': BUCKET_NAME, 'Key': mp3_filename}, ExpiresIn=300)
+                
+                conn.xadd(uuid, forge_data("status", "FINISHED_READY|" + response));
+            except Exception as e:
+                conn.xadd(uuid, forge_data("status", "error"));
+                print(e);
+
+            

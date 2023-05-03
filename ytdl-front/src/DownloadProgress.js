@@ -8,7 +8,7 @@ function DownloadProgress() {
     const { jobId } = useParams();
     const output = useRef([]);
     const [finalOutput, setFinalOutput] = useState("");
-    const [isFinished, setFinished] = useState(false);
+    const [dlUrl, setDlUrl] = useState(null);
 
     function getOutput() {
       let text = "";
@@ -42,8 +42,8 @@ function DownloadProgress() {
       
         sse.addEventListener('status', function(e) {
             
-            if (e.data === "finished") {
-              setFinished(true);
+            if (e.data.includes("FINISHED_READY")) {
+              setDlUrl(e.data.split("|")[1]);
             }
 
         }, false);
@@ -70,10 +70,10 @@ function DownloadProgress() {
           <textarea id="console" rows="10" readOnly="" name="log" defaultValue={finalOutput}>
           </textarea>
 
-          {!isFinished ? (
+          {dlUrl == null ? (
             <h2>Generating download link...</h2>  
           ) : (
-            <h2>Click <a href={`http://192.168.1.10:10501/${jobId}.mp3`}>here</a> to download your file</h2>  
+            <h2>Click <a href={dlUrl}>here</a> to download your file</h2>  
           )}
         </div>
       );

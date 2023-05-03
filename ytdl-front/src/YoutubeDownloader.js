@@ -30,7 +30,7 @@ function YoutubeDownloader() {
       <form className="flex flex-column" onSubmit={handleSubmit}>
         <h1>Download a YouTube's video audio</h1>
         <input type="text" placeholder="Enter a YouTube URL" defaultValue={url} onChange={(event) => setUrl(event.target.value)} />
-        <button>Télécharger</button>
+        <button>Download</button>
       </form>
     </div>
   );

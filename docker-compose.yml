@@ -14,7 +14,6 @@ services:
       - "10501:3000"
     volumes:
      - ./:/code 
-     - mp3-data:/mp3-data:ro
     environment:
       - REDIS_URL=redis
   redis:
@@ -22,8 +21,7 @@ services:
   worker:
     build:
       context: ./ytdl-worker
-    volumes:
-      - mp3-data:/mp3-data
-      
-volumes:
-    mp3-data:
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_DEFAULT_REGION

@@ -1,2 +1,3 @@
 redis
 yt-dlp
+boto3

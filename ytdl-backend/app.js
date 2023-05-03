@@ -11,9 +11,6 @@ var corsOptions = {
   origin: "http://192.168.1.10:10500"
 };
 
-// Serve mp3 files
-// TO-DO (Switch to a dedicated static web server or something else with reverse proxy etc. ONLY FOR DEV NOW)
-app.use(express.static('../mp3-data'))
 app.use(express.json());
 app.use(cors(corsOptions));
 
@@ -32,7 +29,6 @@ app.post('/job/create', function(req, res) {
   client.set(`jobs:${jobId}:url`, url);
 
   client.rPush("jobsQueue", jobId);
-  // TO-DO (Generate a job in REDIS + Send URL to worker + jobId to client)
   res.json({"jobId" : jobId})
 });
 
