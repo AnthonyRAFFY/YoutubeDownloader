@@ -1,13 +1,14 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useParams  } from "react-router-dom";
 
 import "./DownloadProgress.css";
 
 function DownloadProgress() {
 
-    const location = useLocation();
+    const { jobId } = useParams();
     const output = useRef([]);
     const [finalOutput, setFinalOutput] = useState("");
+    const [isFinished, setFinished] = useState(false);
 
     function getOutput() {
       let text = "";
@@ -26,7 +27,7 @@ function DownloadProgress() {
     useEffect(() => {
 
         console.log("Init")
-        const sse = new EventSource(`http://192.168.1.10:10501/stream/${location.state.jobId}`);
+        const sse = new EventSource(`http://192.168.1.10:10501/stream/${jobId}`);
 
         function appendOutput(e) {
 
@@ -39,10 +40,13 @@ function DownloadProgress() {
         
         sse.addEventListener('log', appendOutput, false);
       
-        //sse.addEventListener('status', function(e) {
-            //console.log(e.data);
-            //setOutput(output + "\n" + e.data);
-        //  }, false);
+        sse.addEventListener('status', function(e) {
+            
+            if (e.data === "finished") {
+              setFinished(true);
+            }
+
+        }, false);
       
         sse.onopen = () => {
             console.log('connected');
@@ -57,15 +61,20 @@ function DownloadProgress() {
           sse.close();
           console.log("Cleanup..");
         }
-    }, [location.state.jobId]);
+    }, [jobId]);
 
 
     return (
-        <div class="flex flex-column">
+        <div className="flex flex-column">
           <h1>Your download is in progress...</h1>
-          <textarea id="console" rows="10" readonly="" name="log" value={finalOutput}>
+          <textarea id="console" rows="10" readOnly="" name="log" defaultValue={finalOutput}>
           </textarea>
-          <h2>Generating link...</h2>
+
+          {!isFinished ? (
+            <h2>Generating download link...</h2>  
+          ) : (
+            <h2>Click <a href={`http://192.168.1.10:10501/${jobId}.mp3`}>here</a> to download your file</h2>  
+          )}
         </div>
       );
 }

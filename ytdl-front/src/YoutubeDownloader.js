@@ -19,17 +19,17 @@ function YoutubeDownloader() {
     })
     .then(response => {
         if (response.data.jobId) {
-          navigate("/download", {state:{jobId: response.data.jobId}})
+          navigate(`/download/${response.data.jobId}`)
         }
     });
   };
   
 
   return (
-    <div class="flex flex-column">
-      <form class="flex flex-column" onSubmit={handleSubmit}>
+    <div className="flex flex-column">
+      <form className="flex flex-column" onSubmit={handleSubmit}>
         <h1>Download a YouTube's video audio</h1>
-        <input type="text" placeholder="Enter a YouTube URL" value={url} onChange={(event) => setUrl(event.target.value)} />
+        <input type="text" placeholder="Enter a YouTube URL" defaultValue={url} onChange={(event) => setUrl(event.target.value)} />
         <button>Télécharger</button>
       </form>
     </div>

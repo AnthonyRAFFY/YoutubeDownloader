@@ -11,7 +11,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<YoutubeDownloader/>} />
-            <Route path="download" element={<DownloadProgress/>}/>
+            <Route path="download/:jobId" element={<DownloadProgress/>}/>
           </Route>
         </Routes>
       </BrowserRouter>
