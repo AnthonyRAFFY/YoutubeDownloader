@@ -25,8 +25,6 @@ function DownloadProgress() {
     }
 
     useEffect(() => {
-
-        console.log("Init")
         const sse = new EventSource(`http://192.168.1.10:10501/stream/${jobId}`);
 
         function appendOutput(e) {
@@ -47,10 +45,6 @@ function DownloadProgress() {
             }
 
         }, false);
-      
-        sse.onopen = () => {
-            console.log('connected');
-          };
 
         sse.addEventListener('close', () =>
             sse.close()

@@ -11,7 +11,6 @@ function YoutubeDownloader() {
   const handleSubmit = (event) => {
 
     event.preventDefault();
-    console.log(url);
 
     axios
     .post("http://192.168.1.10:10501/job/create", {
