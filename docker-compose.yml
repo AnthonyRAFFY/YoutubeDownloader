@@ -16,6 +16,7 @@ services:
      - ./:/code 
     environment:
       - REDIS_URL=redis
+      - NODE_ENV=development
   redis:
     image: redis/redis-stack
     ports:

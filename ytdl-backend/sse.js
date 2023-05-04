@@ -1,5 +1,7 @@
-// SSE Middleware
 
+const { log } = require('./logger');
+
+// SSE Middleware
 let clients = new Set();
 let id = 0;
 
@@ -13,12 +15,13 @@ sse = (req, res, next) => {
             'Connection': 'keep-alive'
         });
 
+        log("New client");
         clients.add(res);
     }
 
     res.on('close', () => {
-        console.log("Connection closed in middleware.");
         clients.delete(res);
+        log(`Removing a client. ${clients.size} remaining`)
     });
 
     res.sendSSE = (event, text) => {
@@ -27,7 +30,6 @@ sse = (req, res, next) => {
             `event: ${event}\n` +
             `data: ${text}\n\n`;
             
-        console.log(`Sending to ${clients.size} clients`)
         for (let client of clients) {
             client.write(data);
         }
