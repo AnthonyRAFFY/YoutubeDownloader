@@ -2,10 +2,10 @@ import redis
 import os
 import functools
 import boto3
+import logging
 from botocore.exceptions import ClientError
 from yt_dlp import YoutubeDL
 
-BUCKET_NAME = "ytdl-bucket";
 conn = None;
 s3 = boto3.resource('s3')
 
@@ -37,18 +37,45 @@ def status_hook(d, uuid):
     if d['status'] == 'finished':
         conn.xadd(uuid, forge_data("status", "FINISHED_DOWNLOAD"));
 
-if __name__ == '__main__':
+def check_env_variable(name):
+    if (os.getenv(name) is None):
+        logging.critical("Missing {} environment variable".format(name));
+        return False;
+    return True;
 
-    conn = redis.Redis(host='redis', port=6379, db=0)
+def main():
+    global conn;
+    # ENVIRONMENTS VARIABLES
+    # PROD or DEV
+    WORKER_ENV = os.getenv("WORKER_ENV");
+    logging.basicConfig(level=(logging.INFO if WORKER_ENV == "PROD" else logging.DEBUG), 
+                        format="%(asctime)s - %(levelname)s - %(message)s");
+    # S3 already check some of this, but we do not want to keep the container running and possibly handling a request if this is bound to fail
+    if ((not check_env_variable("S3_BUCKET")) |
+        (not check_env_variable("AWS_ACCESS_KEY_ID")) |
+        (not check_env_variable("AWS_SECRET_ACCESS_KEY")) |
+        (not check_env_variable("AWS_DEFAULT_REGION"))):
+        return;
 
+    BUCKET_NAME = os.getenv("S3_BUCKET");
+
+    # REDIS CONNECTION
+    try:
+        conn = redis.Redis(host='redis', port=6379, db=0)
+    except Exception as e:
+        logging.critical("Redis connection failed.");
+        return;
+
+    # MAIN LOOP
     while True:
-        print("Waiting for new item...")
+        logging.info("Waiting for item.");
+
+        # Item is 
         item = conn.blpop("jobsQueue", timeout=0);
-        
         uuid = item[1].decode("utf-8");
         url = conn.get("jobs:" + uuid + ":url");
         url = url.decode("utf-8");
-        print("URL : " + str(url));
+        logging.debug("URL : " + str(url));
         URLS = [url];
 
         mp3_filename = str(uuid) + ".mp3";
@@ -67,18 +94,20 @@ if __name__ == '__main__':
         }
 
         with YoutubeDL(ydl_opts) as ydl:
-            ydl.download(URLS)
-
-            data = open(mp3_file, 'rb')
-
             try: 
+                # Download
+                ydl.download(URLS)
+                data = open(mp3_file, 'rb')
+                # Send to S3
                 s3.Bucket(BUCKET_NAME).put_object(Key=mp3_filename, Body=data)
                 s3_client = boto3.client('s3')
                 response = s3_client.generate_presigned_url('get_object', Params={'Bucket': BUCKET_NAME, 'Key': mp3_filename}, ExpiresIn=300)
                 
                 conn.xadd(uuid, forge_data("status", "FINISHED_READY|" + response));
             except Exception as e:
+                logging.critical(e);
                 conn.xadd(uuid, forge_data("status", "error"));
-                print(e);
 
+if __name__ == '__main__':
+    main();
             
