@@ -4,7 +4,7 @@ services:
     build:
       context: ./ytdl-front
     ports:
-      - "10500:3000"
+      - "10500:5173"
     volumes:
      - ./ytdl-front/src:/app/src
   express:
